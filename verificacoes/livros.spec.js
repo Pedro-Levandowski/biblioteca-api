@@ -53,6 +53,17 @@ describe('livros', () => {
     assert.equal(corpo.erro.codigo, 'DADOS_INVALIDOS');
   });
 
+  it('recusa corpo JSON null com 422', async () => {
+    const resposta = await fetch(`${base}/livros`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: 'null',
+    });
+    const corpo = await resposta.json();
+    assert.equal(resposta.status, 422);
+    assert.equal(corpo.erro.codigo, 'DADOS_INVALIDOS');
+  });
+
   it('busca um livro pelo identificador', async () => {
     const { corpo: criado } = await criarLivro();
     const resposta = await fetch(`${base}/livros/${criado.id}`);
@@ -74,6 +85,25 @@ describe('livros', () => {
     const livros = await resposta.json();
     assert.equal(livros.length, 1);
     assert.equal(livros[0].titulo, 'Vidas Secas');
+  });
+
+  it('filtra a listagem por título', async () => {
+    await criarLivro({ titulo: 'Dom Casmurro' });
+    await criarLivro({ titulo: 'Memórias Póstumas de Brás Cubas', autor: 'Machado de Assis', ano: 1881 });
+
+    const resposta = await fetch(`${base}/livros?titulo=casmurro`);
+    const livros = await resposta.json();
+    assert.equal(livros.length, 1);
+    assert.equal(livros[0].titulo, 'Dom Casmurro');
+  });
+
+  it('retorna lista vazia quando o filtro por título não encontra correspondência', async () => {
+    await criarLivro({ titulo: 'Dom Casmurro' });
+
+    const resposta = await fetch(`${base}/livros?titulo=inexistente`);
+    const livros = await resposta.json();
+    assert.equal(resposta.status, 200);
+    assert.deepEqual(livros, []);
   });
 
   it('atualiza um livro existente', async () => {

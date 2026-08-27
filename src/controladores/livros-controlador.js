@@ -2,7 +2,10 @@ import * as servico from '../servicos/livros-servico.js';
 import { enviarJson } from '../comum/respostas.js';
 
 export function listar({ res, consulta }) {
-  const livros = servico.listar({ autor: consulta.get('autor') });
+  const livros = servico.listar({
+    autor: consulta.get('autor'),
+    titulo: consulta.get('titulo'),
+  });
   enviarJson(res, 200, livros);
 }
 
