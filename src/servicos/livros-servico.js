@@ -4,6 +4,9 @@ import { dadosInvalidos, naoEncontrado } from '../comum/erros.js';
 const CAMPOS_OBRIGATORIOS = ['titulo', 'autor', 'ano'];
 
 function validar(dados) {
+  if (!dados || typeof dados !== 'object' || Array.isArray(dados)) {
+    throw dadosInvalidos('O corpo da requisição deve ser um objeto.');
+  }
   for (const campo of CAMPOS_OBRIGATORIOS) {
     const valor = dados[campo];
     if (valor === undefined || valor === null || valor === '') {
@@ -23,11 +26,17 @@ function exigirExistente(id) {
   return livro;
 }
 
-export function listar({ autor } = {}) {
-  const livros = repositorio.listar();
-  if (!autor) return livros;
-  const procurado = autor.toLowerCase();
-  return livros.filter((livro) => livro.autor.toLowerCase().includes(procurado));
+export function listar({ autor, titulo } = {}) {
+  let livros = repositorio.listar();
+  if (autor) {
+    const procuradoAutor = autor.toLowerCase();
+    livros = livros.filter((livro) => livro.autor.toLowerCase().includes(procuradoAutor));
+  }
+  if (titulo) {
+    const procuradoTitulo = titulo.toLowerCase();
+    livros = livros.filter((livro) => livro.titulo.toLowerCase().includes(procuradoTitulo));
+  }
+  return livros;
 }
 
 export function buscarPorId(id) {
